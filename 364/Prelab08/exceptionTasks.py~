@@ -1,0 +1,340 @@
+from pprint import pprint as pp
+
+class PointND:
+    def __init__(self, *args):
+        self.t = args
+        self.n = len(self.t)
+        for item in self.t:
+            if not isinstance(item, float):
+                raise ValueError("Cannot instantiate an object with non-float values.")
+
+    def __str__(self):
+        my_str = "("
+        for item in self.t[:-1]:
+            if item < 0.0:
+                temp = "{0:.5s}".format(str(item))
+            else:
+                temp = "{0:.4s}".format(str(item))
+            my_str = my_str + temp + ", "
+        if self.t[-1] < 0.0:
+            temp = "{0:.5s}".format(str(self.t[-1]))
+        else:
+            temp = "{0:.4s}".format(str(self.t[-1]))
+        my_str = my_str + temp + ")"
+        return my_str
+
+    def __hash__(self):
+        return hash(self.t)
+
+    def distanceFrom(self, other):
+        total = 0;
+
+        if isinstance(other, PointND):
+            my_other = other.t
+        else:
+            my_other = other
+
+        try:
+            if len(my_other) == len(self.t):
+                pass
+            else:
+                raise ValueError("Cannot operate on points with different cardinalities.")
+        except ValueError:
+            return "ERROR: Cardinality error."
+
+        for i in range(0, self.n):
+            distance = (self.t[i] - my_other[i]) ** 2
+            total = total + distance
+        total = total ** 0.5
+
+        return (total)
+
+    def nearestPoint(self, points):
+        if points == []:
+            raise ValueError("Input cannot be empty.")
+        distance = self.distanceFrom(points[0])
+        for point in points[1:]:
+            new_dist = self.distanceFrom(point)
+            if new_dist < distance:
+                answer = point
+                distance = new_dist
+
+        return point
+
+    def clone(self):
+        return self
+
+    def __add__(self, other):
+        answer = []
+        if isinstance(other, PointND):
+            if (len(self.t) != len(other.t)):
+                raise ValueError("Cannot operate on points with different cardinalities.")
+            my_other = other.t
+            for i in range(0, self.n):
+                answer.append(self.t[i] + my_other[i])
+            answer = PointND(*answer)
+            return answer
+        else:
+            my_other = other
+            for i in range(0, self.n):
+                answer.append(self.t[i] + my_other)
+            answer = PointND(*answer)
+            return answer
+
+    def __sub__(self, other):
+        answer = []
+        if isinstance(other, PointND):
+            if (len(self.t) != len(other.t)):
+                raise ValueError("Cannot operate on points with different cardinalities.")
+            my_other = other.t
+            for i in range(0, self.n):
+                answer.append(self.t[i] - my_other[i])
+            answer = PointND(*answer)
+            return answer
+        else:
+            my_other = other
+            for i in range(0, self.n):
+                answer.append(self.t[i] - my_other)
+            answer = PointND(*answer)
+            return answer
+
+    def __mul__(self, number):
+        answer = []
+        for i in range(0, self.n):
+            answer.append(self.t[i] * number)
+        answer = PointND(*answer)
+        return answer
+
+    def __truediv__(self, number):
+        answer = []
+        for i in range(0, self.n):
+            answer.append(self.t[i] / number)
+        answer = PointND(*answer)
+        return answer
+
+    def __neg__(self):
+        answer = []
+        for i in range(0, self.n):
+            answer.append(-self.t[i])
+        answer = PointND(*answer)
+        return answer
+
+    def __getitem__(self, item):
+        answer = self.t[item]
+        return answer
+
+    def __eq__(self, other):
+        if (len(self.t) != len(other.t)):
+            raise ValueError("Cannot operate on points with different cardinalities.")
+        for i in range(0, self.n):
+            if self.t[i] != other.t[i]:
+                return False
+        return True
+
+    def __ne__(self, other):
+        if (len(self.t) != len(other.t)):
+            raise ValueError("Cannot operate on points with different cardinalities.")
+        for i in range(0, self.n):
+            if self.t[i] == other.t[i]:
+                return False
+        return True
+
+    def length(self):
+        dist = 0;
+        for coord in self.t:
+            dist = dist + (coord ** 2)
+        dist = dist ** 0.5
+
+        return dist
+
+    def __ge__(self, other):
+        if (len(self.t) != len(other.t)):
+            raise ValueError("Cannot operate on points with different cardinalities.")
+        zeroes = [0.0] * self.n
+        self_dist = self.distanceFrom(zeroes)
+        other_dist = other.distanceFrom(zeroes)
+
+        if self_dist >= other_dist:
+            return True
+        return False
+
+    def __le__(self, other):
+        if (len(self.t) != len(other.t)):
+            raise ValueError("Cannot operate on points with different cardinalities.")
+        zeroes = [0.0] * self.n
+        self_dist = self.distanceFrom(zeroes)
+        other_dist = other.distanceFrom(zeroes)
+
+        if self_dist <= other_dist:
+            return True
+        return False
+
+    def __gt__(self, other):
+        if (len(self.t) != len(other.t)):
+            raise ValueError("Cannot operate on points with different cardinalities.")
+        zeroes = [0.0] * self.n
+        self_dist = self.distanceFrom(zeroes)
+        other_dist = other.distanceFrom(zeroes)
+
+        if self_dist > other_dist:
+            return True
+        return False
+
+    def __lt__(self, other):
+        if (len(self.t) != len(other.t)):
+            raise ValueError("Cannot operate on points with different cardinalities.")
+        zeroes = [0.0] * self.n
+        self_dist = self.distanceFrom(zeroes)
+        other_dist = other.distanceFrom(zeroes)
+
+        if self_dist < other_dist:
+            return True
+        return False
+
+
+class Point3D(PointND):
+    def __init__(self, x=0.0, y=0.0, z=0.0):
+        PointND.__init__(self, x, y, z)
+        x.self = x
+        y.self = y
+        z.self = z
+
+class PointGroup:
+    def __init__(self, **kwargs):
+        self._pointMap = {}
+        prev_n = -1
+        for key, value in kwargs.items():
+            if key != "pointList":
+                raise KeyError("'pointList' input parameter not found.")
+            if value == []:
+                raise ValueError("'pointList' input parameter cannot be empty.")
+            for item in value:
+                self.n = len(item.t)
+                if prev_n != self.n and prev_n != -1:
+                    raise ValueError("Cannot add point {0}. Expecting a point with cardinality {1}.".format(item, self.n))
+                self._pointMap.update({hash(item):item})
+                prev_n = self.n
+
+    def addPoint(self, point):
+        if point.n != self.n:
+            raise ValueError("Cannot add point {0}. Expecting a point with cardinality {1}.".format(point, self.n))
+        self._pointMap.update({hash(point):point})
+
+    def count(self):
+        return len(self._pointMap)
+
+    def computeBoundingHyperCube(self):
+        temp_min = [] * self.n
+        temp_max = [] * self.n
+        flag = -1
+        for key, data in self._pointMap.items():
+            if flag == -1:
+                temp_min = list(data)
+                temp_max = list(data)
+                flag = 0
+                continue
+            for i in range(0, self.n):
+                if data[i] >= temp_max[i]:
+                    temp_max[i] = data[i]
+                if data[i] <= temp_max[i]:
+                    temp_max[i] = data[i]
+        max_points = PointND(*temp_max)
+        min_points = PointND(*temp_min)
+
+        return (min_points, max_points)
+
+    def computeNearestNeighbors(self, otherGroup):
+        old_distance = -1
+        answer = []
+        for key_self, data_self in self._pointMap.items():
+            old_distance = -1
+            for key_other, data_other in otherGroup._pointMap.items():
+                distance = data_self.distanceFrom(data_other)
+                if old_distance == -1:
+                    temp = (data_self, data_other)
+                    old_distance = 0
+                    minimum = distance
+                elif distance < minimum:
+                    temp = (data_self, data_other)
+                    minimum = distance
+                old_distance = distance
+            answer.append(temp)
+        return answer
+
+    def __add__(self, other):
+        if other.n != self.n:
+            raise ValueError("Cannot add point {0}. Expecting a point with cardinality {1}.".format(point, self.n))
+        self._pointMap.update({hash(other):other})
+        return self
+
+    def __sub__(self, other):
+        found_key = 0
+        if other.n != self.n:
+            raise ValueError("Cannot add point {0}. Expecting a point with cardinality {1}.".format(point, self.n))
+        for key, value in self._pointMap.items():
+            if value == other:
+                found_key = key
+        if found_key != 0:
+            self._pointMap.pop(found_key)
+
+        return self
+
+    def __contains__(self, item):
+        for key, value in self._pointMap.items():
+            if value == item:
+                return True
+
+        return False
+
+def createPoint(dataString):
+    data = dataString.split(",")
+    for i in range(len(data)):
+        try:
+            data[i] = float(data[i].strip())
+        except:
+            return "ERROR: String found. All inputs should be floats."
+    x = PointND(*data)
+    return(x)
+
+def distanceBetween(point1, point2):
+    distance = point1.distanceFrom(point2)
+    return distance
+
+def checkVicinity(point, pointList, radius):
+    greaterThan = 0
+    lessThan = 0
+    invalid = 0
+    for data in pointList:
+        distance = point.distanceFrom(data)
+        if isinstance(distance, str):
+            invalid += 1
+        elif distance > radius:
+            greaterThan += 1
+        elif distance <= radius:
+            lessThan += 1
+
+    return (lessThan, greaterThan, invalid)
+
+if __name__ == "__main__":
+    print("\n\n-----CHECKING createPoint with invalid data-----")
+    answer = createPoint("1.34,3.54,lol")
+    print(answer)
+    print("\n\n-----CHECKING createPoint with valid data-----")
+    answer = createPoint("1.34,3.54,    7.545")
+    print(answer)
+    print("\n\n-----CHECKING distanceFrom with valid data-----")
+    x = answer
+    y = PointND(3.14, 5.635, 1.00)
+    answer = distanceBetween(x, y)
+    print(answer)
+    print("\n\n-----CHECKING distanceFrom with invalid data-----")
+    y = PointND(3.14, 5.635, 1.00)
+    z = PointND(6.26, 8.46, 1.0)
+    answer = distanceBetween(x, y)
+    print(answer)
+    print("\n\n-----CHECKING checkVicinity-----")
+    a = PointND(1.573, 4.621, 3.00)
+    invalid = PointND(1.573, 4.621, 3.00, 900.0)
+    pointList = [x, y, z, invalid, a]
+    answer = checkVicinity(a, pointList, 6.3)
+    print(answer)

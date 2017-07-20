@@ -1,0 +1,4 @@
+from prelab08addon import performProcessing
+
+def performProcessing(*args):
+    pass

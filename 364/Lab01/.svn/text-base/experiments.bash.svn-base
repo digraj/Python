@@ -1,0 +1,38 @@
+#! /bin/bash
+
+#---------------------------------------
+# $Author$
+# $Date$
+#---------------------------------------
+
+# Do not modify above this line.
+
+Num_Of_Param=$#
+Param_Values=$@
+
+if (( $# < 1 )) 
+then
+	echo "Usage: experiments.bash <input 1> [input 2] .. [input N]"
+	echo
+	exit 1
+else
+	for (( I = 0; I < $Num_Of_Param; I++ ))
+	do
+		echo "$1:"
+		if ( ! [[ -r $1 ]] )
+		then
+			echo "Filename \"$1\" is not readable."
+		else
+			while read username data1 data2 data3
+			do
+				let sum_total=$data1+$data2+$data3
+				let average=$sum_total/3
+				echo $username $sum_total $average			
+			done < $1
+		fi
+		echo ""
+		shift
+	done
+fi
+
+exit 0 

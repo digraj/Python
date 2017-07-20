@@ -1,0 +1,15 @@
+#! /bin/bash
+
+Num_Of_Param=$#
+
+addition=0
+
+for (( I = $Num_Of_Param; I > 0; I-- ))
+do	
+	addition=$(($addition+$1)) 
+	shift
+done
+
+echo "$addition"
+
+exit 0

@@ -1,0 +1,17 @@
+#! /bin/bash
+
+Num_Of_Param=$#
+Param_Values=$@
+
+for (( I = $Num_Of_Param; I > 0; I-- ))
+do
+	if (( [[ -r $1 ]] ))	
+	then
+		echo "File $1 is readable"
+	else	
+		touch $1
+	fi	
+	shift
+done
+
+exit 0

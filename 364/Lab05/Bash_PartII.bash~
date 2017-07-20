@@ -1,0 +1,11 @@
+#! /bin/bash
+
+#----------------------------------
+# $Author$
+# $Date$
+#----------------------------------
+
+if (( $# != 2 ))
+then
+	echo "Usage: Bash_PartII.bash <filename> <balance>"
+fi

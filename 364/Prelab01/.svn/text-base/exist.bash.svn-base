@@ -1,0 +1,21 @@
+#! /bin/bash
+
+#$Author$
+#$Date$
+#$Revision$
+#$HeadURL$
+#$id$
+
+Num_Of_Param=$#
+Param_Values=$@
+
+for (( I = $Num_Of_Param; I > 0; I-- ))
+do	
+	if ( ! [[ -r $1 ]])
+	then
+		touch $1
+	else 
+		echo "File $1 is readable!"
+	fi	
+	shift
+done

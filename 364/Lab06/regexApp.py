@@ -1,0 +1,196 @@
+
+import re
+from uuid import UUID
+from pprint import pprint as pp
+
+def getNames():
+    file_ptr = open("CompanyEmployees.txt")
+    data = file_ptr.readlines()
+    pattern = r"^(\w*)(,?)\s(\w*),"
+    names = []
+    for line in data:
+        name = re.findall(pattern, line)
+        name = name[0]
+#        name = getName(name)
+        if name[1] == ',':
+            names.append([name[2], name[0]])
+        else:
+            names.append([name[0], name[2]])
+    return names
+
+def getName(name):
+    pattern = r"^(\w*)(,?)\s(\w*),"
+    name = re.findall(pattern, name)
+    name = name[0]
+    if (name[1]) == ',':
+        return (name[2], name[0])
+    else:
+        return (name[0], name[2])
+
+def getRejectedEntries():
+    names = getNames()
+    answer = []
+    file_ptr = open("CompanyEmployees.txt")
+    data = file_ptr.readlines()
+    pattern = r"^(\w*,?\s\w*,)(, , ;,; ;,; ;,;, ;,; ,,)[^\w*]"
+    for line in data:
+        matched = re.findall(pattern, line)
+        if matched != []:
+            name = getName(matched[0][0])
+            name = name[0] + " " + name[1]
+            answer.append(name)
+    answer.sort()
+
+    return answer
+
+def getCompleteEntries():
+    names = getNames()
+    numbernames = getEmployeesWithPhones()
+    statenames = getEmployeesWithStates()
+    idnames = getEmployeesWithIDs()
+    answer = {}
+
+    for name in names:
+        gotname = getName_2(name)
+        if gotname in numbernames and gotname in statenames and gotname in idnames:
+            answer_value = (idnames.get(gotname), numbernames.get(gotname), statenames.get(gotname))
+            answer.update({gotname:answer_value})
+
+    return answer
+
+def getEmployeesWithIDs():
+    names = getNames()
+    answer_dict = {}
+    file_ptr = open("CompanyEmployees.txt")
+    data = file_ptr.readlines()
+    pattern = r"^(\w*,?\s\w*,, , ,,)({?)(\w*-?\w*-?\w*-?\w*-?\w*)(}?)"
+    for line in data:
+        number = re.findall(pattern, line)
+        if (number != []):
+            num = str(UUID(number[0][-2]))
+            name = getName(number[0][0])
+            name = name[0] + " " + name[1]
+            answer_dict.update({name: num})
+
+    return answer_dict
+
+def getNumber(num):
+    pattern = r"\w*"
+    number = re.findall(pattern, num)
+    if len(number) == 6:
+        number = "(" + number[0] + ") " + number[2] + "-" + number[4]
+    elif len(number) == 8:
+        number = "(" + number[1] + ") " + number[4] + "-" + number[6]
+    else:
+        pattern = r"\w{3}"
+        temp = re.findall(pattern, num)
+        temp = "(" + temp[0] + ") " + temp[1]
+        pattern = r"\w{2}"
+        temp2 = re.findall(pattern, num)
+        temp2 = temp + "-" + temp2[3] + temp2[4]
+        number = temp2
+
+    return number
+
+def getEmployeesWithPhones():
+    names = getNames()
+    answer_dict = {}
+    file_ptr = open("CompanyEmployees.txt")
+    data = file_ptr.readlines()
+    pattern = r"^(\w*,?\s\w*,)(, , )(,,)?(;,;)?(({?)(\w*-?\w*-?\w*-?\w*-?\w*)(}?))?(;,; )?(,? ;,; ,)(\(?\w*\)?\s?-?\w*-?\w*)"
+    for line in data:
+        number = re.findall(pattern, line)
+        if(number != []):
+            name = getName(number[0][0])
+            name = name[0] + " " + name[1]
+            number = getNumber(number[0][-1])
+            answer_dict.update({name:number})
+
+    return answer_dict
+
+    pass
+
+
+def getEmployeesWithStates():
+    names = getNames()
+    answer_dict = {}
+    file_ptr = open("CompanyEmployees.txt")
+    data = file_ptr.readlines()
+    pattern = r"^(\w*,?\s\w*,)(, , )(,,)?(;,;)?(({?)(\w*-?\w*-?\w*-?\w*-?\w*)(}?))?(;,; )?(,? ;,; ,)?(\(?\w*\)?\s?-?\w*-?\w*)?(, ;,; ;,;, ;,; ,,)?(;,; ;,; ,,)?(;,; ;,;, ;,; ,,)?(.*)"
+    for line in data:
+        state = re.findall(pattern, line)
+        if state[0][-1] != "":
+            name = getName(state[0][0])
+            name = name[0] + " " + name[1]
+            answer_dict.update({name:state[0][-1]})
+    return answer_dict
+
+
+def getEmployeesWithoutIDs():
+    names = getNames()
+    rejectednames = getRejectedEntries()
+    name_id = getEmployeesWithIDs()
+    answer = []
+    counter = 0
+    file_ptr = open("CompanyEmployees.txt")
+    data = file_ptr.readlines()
+    pattern = r"^(\w*,?\s\w*,, , )(;,;)?(({?)(\w*-?\w*-?\w*-?\w*-?\w*)(}?))?"
+    for line in data:
+        number = re.findall(pattern, line)
+        if (number != []):
+            name = getName(number[0][0])
+            name = name[0] + " " + name[1]
+            if name not in rejectednames and name not in name_id:
+                answer.append(name)
+    answer.sort()
+    return answer
+
+def getName_2(name):
+    return name[0] + " " + name[1]
+
+def getEmployeesWithoutPhones():
+    names = getNames()
+    rejectednames = getRejectedEntries()
+    numbernames = getEmployeesWithPhones()
+    answer = []
+
+    for name in names:
+        gotname = getName_2(name)
+        if gotname not in rejectednames and gotname not in numbernames:
+            answer.append(gotname)
+
+    answer.sort()
+    return answer
+
+def getEmployeesWithoutStates():
+    names = getNames()
+    rejectednames = getRejectedEntries()
+    statenames = getEmployeesWithStates()
+    answer = []
+
+    for name in names:
+        gotname = getName_2(name)
+        if gotname not in rejectednames and gotname not in statenames:
+            answer.append(gotname)
+
+    answer.sort()
+    return answer
+
+if __name__ == "__main__":
+    answer1 = getEmployeesWithIDs()
+    answer2 = getRejectedEntries()
+    answer3 = getEmployeesWithPhones()
+    answer4 = getEmployeesWithStates()
+    answer5 = getEmployeesWithoutIDs()
+    answer6 = getEmployeesWithoutPhones()
+    answer7 = getEmployeesWithoutStates()
+    answer8 = getCompleteEntries()
+    print(len(answer1))
+    print(len(answer2))
+    print(answer2)
+    print(len(answer3))
+    print(len(answer4))
+    print(len(answer5))
+    print(len(answer6))
+    print(len(answer7))
+    print(len(answer8))

@@ -1,0 +1,69 @@
+#! /bin/bash
+
+#---------------------------------------
+# $Author$
+# $Date$
+#---------------------------------------
+
+# Do not modify above this line.
+
+while getopts f:o:-: foo 2> /dev/null
+do
+
+    case $foo in
+
+	f) if [[ ! -r $OPTARG ]]
+	   then
+		echo Error: Input file $OPTARG is not readable.
+		echo
+		exit 3
+	   fi
+	   input_file=$OPTARG
+	    ;; #This means break
+
+	o) output_file=$OPTARG
+	    ;;
+
+	-) num_cols=$(echo $OPTARG | cut -d"=" -f2)
+           option_name=$(echo $OPTARG | cut -d"=" -f1)
+	   ;;
+
+	# The variable $foo gets set to '?' when an invalid option is supplied.
+	\?) echo "Invalid option."
+            echo
+	    exit 2
+	    ;;
+
+        # Default case
+	*) echo "Default case."
+	    ;;
+
+    esac
+
+done
+
+if [ $option_name != "column_number" ]
+then
+	echo Invalid option.
+	echo
+	exit 2
+fi
+
+available_cols=$(head -n 1 $input_file | wc -w)
+if (( $available_cols < $num_cols ))
+then
+	echo Error: Invalid column number.
+	echo
+        exit 4
+elif (( $num_cols < 1 ))
+then
+	echo Error: Invalid column number.
+	exit 4
+else
+	echo Sorting rows by column \#$num_cols.
+fi
+
+sort -n -k$num_cols $input_file > $output_file
+
+echo
+exit 0

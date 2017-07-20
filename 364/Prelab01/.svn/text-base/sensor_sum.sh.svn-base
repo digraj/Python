@@ -1,0 +1,29 @@
+#! /bin/bash
+
+#$Author$
+#$Date$
+#$Revision$
+#$HeadURL$
+#$id$
+
+if (( $# == 1 ))
+then
+	if [[ -r $1 ]]	
+	then	
+		while read sensorid n0 n1 n2
+		do
+			sensor=$(echo $sensorid | cut -b 1-2)
+			echo -n "$sensor "
+			addition=$(($n0+$n1+$n2))
+			echo "$addition"
+		done < $1
+	else
+		echo "error: $1 is not a readable file!"
+		exit 1
+	fi
+else
+	echo "usage: sensor_sum.sh log"
+	exit 1
+fi
+
+exit 0
